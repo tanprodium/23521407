@@ -1,73 +1,59 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// Kiểm tra năm nhuận
-bool KiemTraNamNhuan(int nam) {
-    return (nam % 4 == 0 && nam % 100 != 0) || (nam % 400 == 0);
-}
+struct DayInYear {
+    int d, m, y;
+    int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-// Số ngày trong một tháng
-int SoNgayTrongThang(int thang, int nam) {
-    if (thang == 2) {
-        return KiemTraNamNhuan(nam) ? 29 : 28;
-    }
-    return (thang == 4 || thang == 6 || thang == 9 || thang == 11) ? 30 : 31;
-}
-
-// Tìm ngày tiếp theo
-void NgayKeTiep(int &ngay, int &thang, int &nam) {
-    ngay++;
-    if (ngay > SoNgayTrongThang(thang, nam)) {
-        ngay = 1;
-        thang++;
-        if (thang > 12) {
-            thang = 1;
-            nam++;
+    DayInYear(int d, int m, int y) : d(d), m(m), y(y) {
+        if (d < 1 || m < 1 || d > 31 || m > 12) {
+            throw invalid_argument("Ngay thang khong hop le");
         }
+        if (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) days[1] = 29; // nam nhuan
     }
-}
 
-// Tìm ngày trước
-void NgayTruoc(int &ngay, int &thang, int &nam) {
-    ngay--;
-    if (ngay < 1) {
-        thang--;
-        if (thang < 1) {
-            thang = 12;
-            nam--;
+    DayInYear PreviousDay() {
+        int dd = d, mm = m, yy = y;
+        if (dd > 1) dd -= 1;
+        else {
+            if (mm > 1) {
+                mm -= 1; dd = days[mm - 1];
+            } else {
+                yy -= 1; mm = 12; dd = 31;
+            }
         }
-        ngay = SoNgayTrongThang(thang, nam);
+        return DayInYear(dd, mm, yy);
     }
-}
 
-// Tính số thứ tự của ngày trong năm
-int SoThuTuTrongNam(int ngay, int thang, int nam) {
-    int demNgay = 0;
-    for (int m = 1; m < thang; m++) {
-        demNgay += SoNgayTrongThang(m, nam);
+    DayInYear NextDay() {
+        int dd = d, mm = m, yy = y;
+        if (dd < days[mm - 1]) dd += 1;
+        else {
+            if (mm < 12) {
+                mm += 1; dd = 1;
+            } else {
+                yy += 1; mm = 1; dd = 1;
+            }
+        }
+        return DayInYear(dd, mm, yy);
     }
-    demNgay += ngay;
-    return demNgay;
-}
+
+    int DayTh() {
+        int res = d;
+        for (int i = 0; i < m - 1; i++) res += days[i];
+        return res;
+    }
+
+    static void Show(DayInYear day) {
+        cout << day.d << "/" << day.m << "/" << day.y << endl;
+    }
+};
 
 int main() {
-    int ngay, thang, nam;
-    cout << "Nhap ngay (dd mm yyyy): ";
-    cin >> ngay >> thang >> nam;
-
-    // Tính ngày kế tiếp
-    int keTiepNgay = ngay, keTiepThang = thang, keTiepNam = nam;
-    NgayKeTiep(keTiepNgay, keTiepThang, keTiepNam);
-    cout << "Ngay ke tiep: " << keTiepNgay << "/" << keTiepThang << "/" << keTiepNam << endl;
-
-    // Tính ngày trước
-    int truocNgay = ngay, truocThang = thang, truocNam = nam;
-    NgayTruoc(truocNgay, truocThang, truocNam);
-    cout << "Ngay truoc: " << truocNgay << "/" << truocThang << "/" << truocNam << endl;
-
-    // Tính số thứ tự trong năm
-    int soThuTu = SoThuTuTrongNam(ngay, thang, nam);
-    cout << "Ngay " << ngay << "/" << thang << "/" << nam << " la ngay thu: " << soThuTu << " trong nam." << endl;
-
-    return 0;
+    int d, m, y;
+    cout << "Nhap ngay thang nam: "; cin >> d >> m >> y;
+    DayInYear day(d, m, y);
+    cout << "Ngay truoc la: "; DayInYear::Show(day.PreviousDay());
+    cout << "Ngay sau la: ";   DayInYear::Show(day.NextDay());
+    cout << "Day la ngay thu: " << day.DayTh() << endl;
 }
